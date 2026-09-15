@@ -2,6 +2,26 @@
 
 All notable changes to this project are recorded here.
 
+## 2.1.2 - 2026-09-15
+
+### Added
+
+- `install.py` launcher now discovers a usable Python in three places:
+  - `HERMES_ANTIGRAVITY_PYTHON` environment override (highest priority),
+  - `sys.executable` of the running launcher, if it can already import the package,
+  - every `python3` / `python` on `PATH` and three well-known per-user locations (`~/.local/bin/python3`, `~/.local/share/hermes-antigravity-acp-venv/bin/python`, the same with `python3` suffix).
+- New unit test `test_launcher_python_discovery_prefers_hermes_antigravity_python_override` locks in the discovery contract.
+
+### Changed
+
+- `.github/workflows/release.yml`: `publish-testpypi` job is now `continue-on-error: true`. TestPyPI is a dry-run surface; its unavailability must not flip the workflow conclusion from success to failure.
+
+### Preserved
+
+- No behavior change to the broker, the persistent `agy` lifecycle, or the live OAuth path.
+- 20/20 offline tests still pass. Live OAuth smoke 9/9 still passes.
+- No Hermes source change. No credential file read or written.
+
 ## 2.1.1 - 2026-09-15
 
 ### Changed

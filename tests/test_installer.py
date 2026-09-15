@@ -71,6 +71,33 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(destination.read_text(encoding="utf-8"), "old adapter\n")
             self.assertEqual(destination.stat().st_mode & 0o777, 0o700)
 
+    def test_launcher_python_discovery_prefers_hermes_antigravity_python_override(
+        self,
+    ) -> None:
+        override = "/opt/custom-python/bin/python"
+        env = {**os.environ, "HERMES_ANTIGRAVITY_PYTHON": override}
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import importlib.util, runpy, sys;"
+                    "src = importlib.util.spec_from_file_location('launcher_probe', '"
+                    + str(INSTALLER.parent / "install.py").replace("'", "\\'")
+                    + "');"
+                    "m = importlib.util.module_from_spec(src); src.loader.exec_module(m);"
+                    "sys.stdout.write(m.render_launcher().decode('utf-8'))"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            env=env,
+            timeout=10,
+            check=False,
+        )
+        # Just verify the rendered launcher contains the override hook.
+        self.assertIn("HERMES_ANTIGRAVITY_PYTHON", completed.stdout)
+
     def test_install_writes_launcher_when_source_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)

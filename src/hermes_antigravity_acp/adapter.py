@@ -31,7 +31,7 @@ try:
 except Exception:  # pragma: no cover - optional Workspace OS integration
     OPERATOR_HOME = Path.home()
 
-VERSION = "2.1.1"
+VERSION = "2.1.2"
 BROKER_PROTOCOL_VERSION = 1
 DEFAULT_FIRST_TEXT_TIMEOUT = 45.0
 DEFAULT_CONTINUATION_FIRST_TEXT_TIMEOUT = 45.0
