@@ -44,7 +44,7 @@ Do not copy OAuth files into this repository or Hermes configuration.
 ### From PyPI (recommended for end users)
 
 ```bash
-python3 -m pip install --user hermes-antigravity-acp
+python3 -m pip install --user --upgrade hermes-antigravity-acp
 python3 -m hermes_antigravity_acp --version
 ```
 
@@ -52,9 +52,19 @@ If the system Python is externally managed, use a virtual environment:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install hermes-antigravity-acp
+.venv/bin/python -m pip install --upgrade hermes-antigravity-acp
 .venv/bin/hermes-antigravity-acp --version
 ```
+
+The adapter version printed here is what `hermes chat --provider copilot-acp` will use when bound to this binary. To pin the version explicitly:
+
+```bash
+python3 -m pip install --user --upgrade hermes-antigravity-acp==X.Y.Z
+```
+
+After upgrading, restart any active `hermes chat` sessions so the new
+adapter takes effect. The `--upgrade` flag is the only step needed; the
+launcher auto-discovers the venv's Python on every invocation.
 
 Then point Hermes at the installed adapter:
 

@@ -4,7 +4,7 @@ Thank you for your interest in improving hermes-antigravity-acp. This
 document describes how to set up a development environment, run the test
 suite, and submit a change.
 
-## Local setup
+## Local development setup
 
 ```bash
 git clone https://github.com/taras-polishchuk/hermes-antigravity-acp.git
@@ -12,6 +12,23 @@ cd hermes-antigravity-acp
 python3 -m pip install --user ruff==0.15.22 mypy==1.13.0 bandit==1.9.4
 PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -v
 ```
+
+## Pinning the local adapter to a specific version
+
+The launcher picks up whichever version is installed in the venv whose Python it discovers first. To keep the local adapter pinned to a specific version across upgrades of other Python packages in the same venv:
+
+```bash
+# Inside the venv that owns the adapter:
+python3 -m pip install --upgrade hermes-antigravity-acp==X.Y.Z
+python3 -m hermes_antigravity_acp --version  # must show X.Y.Z
+# Re-run install.py to refresh the launcher binding:
+python3 install.py --configure-hermes
+```
+
+The `--upgrade` argument is intentional: PyPI's indexer lags behind the
+JSON metadata API, so plain `pip install hermes-antigravity-acp` may
+briefly resolve an older version after a release. `--upgrade` (or
+`--no-cache-dir`) forces pip to re-check the index.
 
 ## Development discipline
 
