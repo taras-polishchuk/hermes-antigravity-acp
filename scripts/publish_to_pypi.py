@@ -23,10 +23,9 @@ The script:
    ``CHANGELOG.md`` heading.
 2. Builds sdist and wheel into ``dist/``.
 3. Validates both artifacts via ``twine check``.
-4. Prompts for the Git tag to publish (default ``HEAD``).
-5. Triggers the ``release.yml`` workflow through ``gh workflow run``.
+4. Triggers the ``release.yml`` workflow through ``gh workflow run``.
 
-It does NOT push the tag automatically — tag publication is an explicit
+It does NOT push the tag automatically; tag publication is an explicit
 operator step.
 """
 
@@ -40,10 +39,22 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+PACKAGE_DIR = REPO / "src" / "hermes_antigravity_acp"
 
 
 def run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, capture_output=True, text=True, check=False, **kwargs)  # noqa: PERF401 - clarity over micro-perf
+    return subprocess.run(  # type: ignore[call-overload]
+        cmd,
+        capture_output=True,
+        text=True,
+        check=False,
+        **kwargs,  # noqa: PERF401 - clarity over micro-perf
+    )
+
+
+def _find_version(path: Path, pattern: str) -> str | None:
+    match = re.search(pattern, path.read_text(encoding="utf-8"), re.MULTILINE)
+    return match.group(1).strip() if match else None
 
 
 def main() -> int:
@@ -60,25 +71,33 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    pkg_dir = REPO / "src" / "hermes_antigravity_acp"
-    pyproject = REPO / "pyproject.toml"
-    version = (
-        re.search(r'^version\s*=\s*"([^"]+)"', pyproject.read_text(encoding="utf-8"), re.MULTILINE)
-        .group(1)
-        .strip()
+    pyproject_version = _find_version(
+        REPO / "pyproject.toml", r'^version\s*=\s*"([^"]+)"'
     )
-    adapter_version = pkg_dir.joinpath("adapter.py").read_text(encoding="utf-8")
-    adapter_match = re.search(r'VERSION\s*=\s*"([^"]+)"', adapter_version)
-    if adapter_match is None or adapter_match.group(1) != version:
+    adapter_version = _find_version(
+        PACKAGE_DIR / "adapter.py", r'VERSION\s*=\s*"([^"]+)"'
+    )
+    if pyproject_version is None or adapter_version is None:
         print(
-            f"ERROR version mismatch: pyproject.toml={version!r} adapter.py="
-            f"{adapter_match.group(1) if adapter_match else 'MISSING'!r}",
+            "ERROR cannot find version in pyproject.toml or adapter.py",
             file=sys.stderr,
         )
         return 2
+    if pyproject_version != adapter_version:
+        print(
+            "ERROR version mismatch: "
+            f"pyproject.toml={pyproject_version!r} adapter.py={adapter_version!r}",
+            file=sys.stderr,
+        )
+        return 2
+    version = pyproject_version
 
     changelog = (REPO / "CHANGELOG.md").read_text(encoding="utf-8")
-    if not re.search(rf"^## {re.escape(version)} - \d{{4}}-\d{{2}}-\d{{2}}$", changelog, re.MULTILINE):
+    if not re.search(
+        rf"^## {re.escape(version)} - \d{{4}}-\d{{2}}-\d{{2}}$",
+        changelog,
+        re.MULTILINE,
+    ):
         print(
             f"WARN CHANGELOG.md has no dated heading for version {version}.",
             file=sys.stderr,
@@ -90,7 +109,10 @@ def main() -> int:
 
     if not args.skip_build:
         print(f"BUILD version={version}")
-        completed = run(["python3", "-m", "build", "--sdist", "--wheel", "--no-isolation"], cwd=str(REPO))
+        completed = run(
+            ["python3", "-m", "build", "--sdist", "--wheel", "--no-isolation"],
+            cwd=str(REPO),
+        )
         if completed.returncode != 0:
             print(completed.stdout)
             print(completed.stderr, file=sys.stderr)
@@ -111,7 +133,16 @@ def main() -> int:
     print("TWINE_OK")
 
     completed = run(
-        ["gh", "workflow", "run", "release.yml", "--ref", args.tag, "--repo", "taras-polishchuk/hermes-antigravity-acp"],
+        [
+            "gh",
+            "workflow",
+            "run",
+            "release.yml",
+            "--ref",
+            args.tag,
+            "--repo",
+            "taras-polishchuk/hermes-antigravity-acp",
+        ]
     )
     if completed.returncode != 0:
         print(completed.stdout)
