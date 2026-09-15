@@ -2,6 +2,20 @@
 
 All notable changes to this project are recorded here.
 
+## 2.1.3 - 2026-09-15
+
+### Changed
+
+- `scripts/publish_to_pypi.py` accepts `--target pypi|testpypi` (default `pypi`) and now documents the TestPyPI trusted publisher URL in its DONE message. Use `--target testpypi` to verify a TestPyPI trusted publisher registration.
+- `MAINTAINERS.md` and `CONTRIBUTING.md` updated to spell out the exact values for both the PyPI and TestPyPI trusted publisher registrations and to note that TestPyPI is a dry-run surface (`continue-on-error: true`).
+- `CONTRIBUTING.md` mentions that `release.yml` signs PyPI digital attestations on every upload.
+
+### Preserved
+
+- No behavior change to the broker, the persistent `agy` lifecycle, or the live OAuth path.
+- 21/21 offline tests still pass. Live OAuth smoke 9/9 still passes.
+- No Hermes source change. No credential file read or written.
+
 ## 2.1.2 - 2026-09-15
 
 ### Added

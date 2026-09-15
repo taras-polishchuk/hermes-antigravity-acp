@@ -48,10 +48,12 @@ PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -v
   semver: `vX.Y.Z`.
 - The PyPI publication is fully automated through GitHub Actions
   Trusted Publishing. Pushing a tag `v*.*.*` triggers the
-  `release.yml` workflow, which builds sdist + wheel, runs no tests
-  (the `ci.yml` workflow already gates `main`), and uploads both
-  artifacts to PyPI and TestPyPI through OIDC. No API token is ever
-  stored in the repository.
+  `release.yml` workflow, which builds sdist + wheel, signs PyPI
+  digital attestations, and uploads both artifacts to PyPI through
+  OIDC. No API token is required. TestPyPI publication is included
+  in the same workflow but is `continue-on-error: true` because
+  TestPyPI is a dry-run surface and its trusted publisher is
+  operator-registered separately.
 - The CHANGELOG release heading `## X.Y.Z - YYYY-MM-DD` is set at release
   time, not when changes are merged.
 - PyPI does not allow overwriting a released version. To fix a published

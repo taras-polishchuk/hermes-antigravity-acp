@@ -8,7 +8,7 @@ If `agy` exits naturally between successful turns, the broker restarts it with t
 
 ## Status
 
-- Adapter version: 2.1.2
+- Adapter version: 2.1.3
 - Verified with Hermes 0.19.x and Antigravity CLI 1.2.2
 - Platforms: Linux, macOS, WSL
 - Python: 3.10+

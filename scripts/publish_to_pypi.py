@@ -69,6 +69,17 @@ def main() -> int:
         action="store_true",
         help="Skip local sdist + wheel build (use existing dist/).",
     )
+    parser.add_argument(
+        "--target",
+        choices=("pypi", "testpypi"),
+        default="pypi",
+        help=(
+            "Publish target. Defaults to 'pypi'. Use 'testpypi' to verify a "
+            "trusted publisher registration by populating TestPyPI only "
+            "(TestPyPI's trusted publisher must already be registered on "
+            "https://test.pypi.org/manage/account/publishing/)."
+        ),
+    )
     args = parser.parse_args()
 
     pyproject_version = _find_version(
@@ -132,6 +143,12 @@ def main() -> int:
         return 2
     print("TWINE_OK")
 
+    target_label = args.target
+    target_docs = (
+        "PyPI"
+        if target_label == "pypi"
+        else "TestPyPI (dry-run only; trusted publisher at https://test.pypi.org/manage/account/publishing/)"
+    )
     completed = run(
         [
             "gh",
@@ -150,9 +167,9 @@ def main() -> int:
         return 2
     print(completed.stdout.strip())
     print(
-        "DONE. The workflow will publish to PyPI once the one-time trusted publisher is "
-        "registered at <https://pypi.org/manage/account/publishing/> for "
-        "taras-polishchuk/hermes-antigravity-acp (workflow release.yml, environment pypi)."
+        "DONE. The workflow will publish to "
+        f"{target_docs} for taras-polishchuk/hermes-antigravity-acp "
+        f"(workflow release.yml, environment {target_label})."
     )
     return 0
 

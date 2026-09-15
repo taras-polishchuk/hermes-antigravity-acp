@@ -13,9 +13,16 @@ requests, issues, and security reports are reviewed asynchronously.
    once the trusted publisher is registered on PyPI for this repo.
 4. Edit the GitHub Release description if the auto-generated notes miss
    anything user-facing.
-5. Verify topics and the repository description are still accurate.
-6. If a PyPI trusted publisher has never been registered for this repo,
-   add it once at <https://pypi.org/manage/account/publishing/>:
-   owner `taras-polishchuk`, project `hermes-antigravity-acp`,
-   repository `taras-polishchuk/hermes-antigravity-acp`, workflow
-   filename `release.yml`, environment name `pypi`.
+3. Verify topics and the repository description are still accurate.
+4. TestPyPI is a dry-run surface. To enable it, add a trusted publisher
+   at <https://test.pypi.org/manage/account/publishing/> with these
+   exact values:
+   - **Owner**: `taras-polishchuk`
+   - **Project**: `hermes-antigravity-acp`
+   - **Repository**: `taras-polishchuk/hermes-antigravity-acp`
+   - **Workflow filename**: `release.yml`
+   - **Environment name**: `testpypi`
+   After that, re-trigger the workflow with
+   `gh workflow run release.yml --ref vX.Y.Z --repo taras-polishchuk/hermes-antigravity-acp`
+   to populate TestPyPI for the chosen tag. TestPyPI failures do NOT
+   block the workflow conclusion (`continue-on-error: true`).
