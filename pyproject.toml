@@ -1,0 +1,106 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hermes-antigravity-acp"
+version = "2.1.1"
+description = "Local ACP bridge that reuses one Google OAuth-backed Antigravity CLI (agy) per Hermes session. No Hermes source changes; credentials stay with Antigravity."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Taras Polishchuk", email = "poli.taras.shchuk@gmail.com" },
+]
+keywords = [
+  "antigravity",
+  "agy",
+  "acp",
+  "hermes",
+  "hermes-agent",
+  "gemini",
+  "gemini-api",
+  "google-cloud",
+  "oauth",
+  "ai-agents",
+  "bridge",
+  "adapter",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: BSD",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: System :: Distributed Computing",
+  "Topic :: Communications",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/taras-polishchuk/hermes-antigravity-acp"
+Repository = "https://github.com/taras-polishchuk/hermes-antigravity-acp"
+Issues = "https://github.com/taras-polishchuk/hermes-antigravity-acp/issues"
+Changelog = "https://github.com/taras-polishchuk/hermes-antigravity-acp/blob/main/CHANGELOG.md"
+
+[project.scripts]
+hermes-antigravity-acp = "hermes_antigravity_acp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hermes_antigravity_acp"]
+include = ["src/hermes_antigravity_acp/*", "install.py"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/hermes_antigravity_acp",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+  "ARCHITECTURE.md",
+  "TROUBLESHOOTING.md",
+  "SECURITY.md",
+  "CONTRIBUTING.md",
+  "MAINTAINERS.md",
+  "SUPPORT.md",
+  "CODEOWNERS",
+  "CITATION.cff",
+  "tests",
+  "scripts",
+  "pyproject.toml",
+]
+exclude = [
+  ".github",
+  ".git",
+  "dist",
+  "build",
+  ".mypy_cache",
+  ".ruff_cache",
+  "__pycache__",
+  "*.egg-info",
+]
+
+[tool.hatch.build.targets.sdist.force-include]
+"install.py" = "install.py"
+"tests/fake_agy.py" = "tests/fake_agy.py"
+"tests/test_adapter.py" = "tests/test_adapter.py"
+"tests/test_installer.py" = "tests/test_installer.py"
+"scripts/smoke_test.py" = "scripts/smoke_test.py"
+
+[tool.hatch.build.targets.wheel.force-include]
+"install.py" = "install.py"
+
+[tool.hatch.build.targets.wheel.shared-data]
+"README.md" = "README.md"
+"LICENSE" = "LICENSE"
+"install.py" = "install.py"
+
+[tool.hatch.version]
+path = "src/hermes_antigravity_acp/adapter.py"

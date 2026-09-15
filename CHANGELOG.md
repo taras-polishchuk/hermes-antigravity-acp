@@ -2,6 +2,26 @@
 
 All notable changes to this project are recorded here.
 
+## 2.1.1 - 2026-09-15
+
+### Changed
+
+- Source layout: moved the single-file adapter to a real Python package at `src/hermes_antigravity_acp/`. This unblocks PyPI publication and keeps the CLI surface, broker lifecycle and offline tests unchanged.
+- `install.py` now writes a small launcher that delegates to `python -m hermes_antigravity_acp`, so the installed adapter works with every supported Python and no longer embeds the full adapter body.
+- `scripts/smoke_test.py` invokes the adapter via `python -m hermes_antigravity_acp` by default; the legacy `--adapter <path>` override is preserved for offline debugging.
+- GitHub Actions now builds and publishes to PyPI via Trusted Publishing on every `v*.*.*` tag (no API token required).
+
+### Added
+
+- `pyproject.toml` (PEP 621 metadata, hatchling backend, console script `hermes-antigravity-acp`).
+- Release workflow `.github/workflows/release.yml` that builds sdist + wheel and publishes to PyPI through `pypa/gh-action-pypi-publish` using GitHub OIDC.
+
+### Preserved
+
+- The `HERMES_COPILOT_ACP_COMMAND=...` binding keeps working unchanged.
+- All 20 offline tests still pass and 9/9 live OAuth smoke checks still pass.
+- No Hermes source change. No credential file read or written.
+
 ## 2.1.0 - 2026-09-15
 
 ### Added

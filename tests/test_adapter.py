@@ -16,14 +16,12 @@ from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULE_PATH = ROOT / "hermes_antigravity_acp.py"
+SRC_ROOT = ROOT / "src"
+PACKAGE_NAME = "hermes_antigravity_acp"
 
-spec = importlib.util.spec_from_file_location("hermes_antigravity_acp", MODULE_PATH)
-if spec is None or spec.loader is None:
-    raise RuntimeError(f"Cannot load adapter module at {MODULE_PATH}")
-adapter = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = adapter
-spec.loader.exec_module(adapter)
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+adapter = importlib.import_module(PACKAGE_NAME)
 
 
 class AdapterUnitTests(unittest.TestCase):
@@ -41,6 +39,7 @@ class AdapterUnitTests(unittest.TestCase):
             "FAKE_AGY_START_COUNT_FILE": str(self.counter),
             "FAKE_AGY_PID_FILE": str(self.pid_file),
             "FAKE_AGY_ARGV_FILE": str(self.argv_file),
+            "PYTHONPATH": str(SRC_ROOT),
         }
 
     def tearDown(self) -> None:
@@ -392,20 +391,20 @@ class BrokerIntegrationTests(unittest.TestCase):
             "ANTIGRAVITY_SESSION_IDLE_TIMEOUT": "30",
             "FAKE_AGY_START_COUNT_FILE": str(self.counter),
             "FAKE_AGY_PID_FILE": str(self.pid_file),
+            "PYTHONPATH": str(SRC_ROOT),
             "PYTHONUNBUFFERED": "1",
         }
 
     def tearDown(self) -> None:
-        if MODULE_PATH.exists():
-            subprocess.run(
-                [sys.executable, str(MODULE_PATH), "--shutdown-broker"],
-                env=self.env,
-                cwd=str(ROOT),
-                capture_output=True,
-                text=True,
-                timeout=5,
-                check=False,
-            )
+        subprocess.run(
+            [sys.executable, "-m", PACKAGE_NAME, "--shutdown-broker"],
+            env=self.env,
+            cwd=str(SRC_ROOT.parent),
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
         self.tmp.cleanup()
 
     def _exchange(self, marker: str) -> tuple[str, list[dict]]:
@@ -430,7 +429,7 @@ class BrokerIntegrationTests(unittest.TestCase):
         # The adapter validates the generated session ID. Drive initialize/new
         # first, then send prompt using the returned value in one live process.
         proc = subprocess.Popen(
-            [sys.executable, str(MODULE_PATH)],
+            [sys.executable, "-m", PACKAGE_NAME],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -500,7 +499,7 @@ class BrokerIntegrationTests(unittest.TestCase):
         self.assertTrue(adapter.process_exists(pid))
 
         completed = subprocess.run(
-            [sys.executable, str(MODULE_PATH), "--shutdown-broker"],
+            [sys.executable, "-m", PACKAGE_NAME, "--shutdown-broker"],
             env=self.env,
             cwd=str(ROOT),
             capture_output=True,
@@ -518,7 +517,7 @@ class BrokerIntegrationTests(unittest.TestCase):
         self._exchange("STATUS")
 
         completed = subprocess.run(
-            [sys.executable, str(MODULE_PATH), "--status"],
+            [sys.executable, "-m", PACKAGE_NAME, "--status"],
             env=self.env,
             cwd=str(ROOT),
             capture_output=True,

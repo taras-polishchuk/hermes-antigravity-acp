@@ -15,12 +15,16 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_ADAPTER = ROOT / "hermes_antigravity_acp.py"
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+PACKAGE = "hermes_antigravity_acp"
+DEFAULT_ADAPTER_CMD = [sys.executable, "-m", PACKAGE]
 
 
-def exchange(adapter: Path, env: dict[str, str], marker: str) -> dict[str, Any]:
+def exchange(cmd: list[str], env: dict[str, str], marker: str) -> dict[str, Any]:
     process = subprocess.Popen(
-        [sys.executable, str(adapter)],
+        cmd,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -116,10 +120,10 @@ def exchange(adapter: Path, env: dict[str, str], marker: str) -> dict[str, Any]:
 
 
 def adapter_json(
-    adapter: Path, env: dict[str, str], flag: str
+    cmd: list[str], env: dict[str, str], flag: str
 ) -> tuple[int, dict[str, Any]]:
     completed = subprocess.run(
-        [sys.executable, str(adapter), flag],
+        [*cmd, flag],
         cwd=str(ROOT),
         env=env,
         capture_output=True,
@@ -133,19 +137,33 @@ def adapter_json(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--adapter", type=Path, default=DEFAULT_ADAPTER)
+    parser.add_argument(
+        "--adapter",
+        type=Path,
+        default=None,
+        help=(
+            "Optional override path to a single-file adapter; when omitted, "
+            "the smoke test invokes `python -m hermes_antigravity_acp`."
+        ),
+    )
     parser.add_argument("--model", default="gemini-3.1-pro-high")
     parser.add_argument("--max-cold-seconds", type=float, default=15.0)
     parser.add_argument("--max-warm-seconds", type=float, default=15.0)
     return parser.parse_args()
 
 
+def resolve_cmd(args_adapter: Path | None) -> list[str]:
+    if args_adapter is None:
+        return list(DEFAULT_ADAPTER_CMD)
+    resolved = args_adapter.expanduser().resolve()
+    if not resolved.is_file():
+        raise SystemExit(f"adapter missing: {resolved}")
+    return [sys.executable, str(resolved)]
+
+
 def main() -> int:
     args = parse_args()
-    adapter = args.adapter.expanduser().resolve()
-    if not adapter.is_file():
-        print(json.dumps({"ok": False, "error": f"adapter missing: {adapter}"}))
-        return 2
+    cmd = resolve_cmd(args.adapter)
 
     with tempfile.TemporaryDirectory(prefix="hermes-antigravity-smoke-") as tmpdir:
         env = os.environ.copy()
@@ -161,20 +179,23 @@ def main() -> int:
                 "SMOKE_MODEL": args.model,
             }
         )
+        if args.adapter is None and "PYTHONPATH" not in env:
+            existing = env.get("PYTHONPATH")
+            env["PYTHONPATH"] = f"{SRC_ROOT}:{existing}" if existing else str(SRC_ROOT)
 
         results: list[dict[str, Any]] = []
         status_one: dict[str, Any] = {}
         status_two: dict[str, Any] = {}
         backend_pids: list[int] = []
         try:
-            results.append(exchange(adapter, env, "OAUTH_SMOKE_ONE"))
-            status_one_rc, status_one = adapter_json(adapter, env, "--status")
-            results.append(exchange(adapter, env, "OAUTH_SMOKE_TWO"))
-            status_two_rc, status_two = adapter_json(adapter, env, "--status")
+            results.append(exchange(cmd, env, "OAUTH_SMOKE_ONE"))
+            status_one_rc, status_one = adapter_json(cmd, env, "--status")
+            results.append(exchange(cmd, env, "OAUTH_SMOKE_TWO"))
+            status_two_rc, status_two = adapter_json(cmd, env, "--status")
             backend_pids = list(status_two.get("backend_pids") or [])
         finally:
             shutdown = subprocess.run(
-                [sys.executable, str(adapter), "--shutdown-broker"],
+                [*cmd, "--shutdown-broker"],
                 cwd=str(ROOT),
                 env=env,
                 capture_output=True,

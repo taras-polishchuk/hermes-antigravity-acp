@@ -8,7 +8,7 @@ If `agy` exits naturally between successful turns, the broker restarts it with t
 
 ## Status
 
-- Adapter version: 2.1.0
+- Adapter version: 2.1.1
 - Verified with Hermes 0.19.x and Antigravity CLI 1.2.2
 - Platforms: Linux, macOS, WSL
 - Python: 3.10+
@@ -40,6 +40,43 @@ Hermes supplies `HERMES_SESSION_ID` to subprocesses. The broker uses it as an op
 Do not copy OAuth files into this repository or Hermes configuration.
 
 ## Install
+
+### From PyPI (recommended for end users)
+
+```bash
+python3 -m pip install --user hermes-antigravity-acp
+python3 -m hermes_antigravity_acp --version
+```
+
+If the system Python is externally managed, use a virtual environment:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install hermes-antigravity-acp
+.venv/bin/hermes-antigravity-acp --version
+```
+
+Then point Hermes at the installed adapter:
+
+```bash
+export HERMES_COPILOT_ACP_COMMAND="$(command -v hermes-antigravity-acp)"
+```
+
+Or run the bundled installer after installing the package:
+
+```bash
+python3 -m pip install --user hermes-antigravity-acp
+python3 -m hermes_antigravity_acp --version
+python3 "$(python3 -c 'import importlib.util, sys, pathlib; print(next(pathlib.Path(p).parent for p in importlib.util.find_spec("hermes_antigravity_acp").submodule_search_locations)))"/install.py --configure-hermes
+```
+
+The last step resolves the installed `install.py` from the package's
+distribution metadata and runs it with `--configure-hermes` to wire
+Hermes automatically. Most users do not need this — exporting
+`HERMES_COPILOT_ACP_COMMAND` to the absolute path of the installed
+`hermes-antigravity-acp` binary is enough.
+
+### From a Git checkout (for contributors)
 
 ```bash
 git clone https://github.com/taras-polishchuk/hermes-antigravity-acp.git

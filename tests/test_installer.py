@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = ROOT / "install.py"
-SOURCE = ROOT / "hermes_antigravity_acp.py"
+PACKAGE_DIR = ROOT / "src" / "hermes_antigravity_acp"
 
 spec = importlib.util.spec_from_file_location("adapter_installer", INSTALLER)
 if spec is None or spec.loader is None:
@@ -19,6 +19,7 @@ if spec is None or spec.loader is None:
 installer = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = installer
 spec.loader.exec_module(installer)
+EXPECTED_LAUNCHER = installer.render_launcher()
 
 
 class InstallerTests(unittest.TestCase):
@@ -55,15 +56,14 @@ class InstallerTests(unittest.TestCase):
             destination.write_text("old adapter\n", encoding="utf-8")
             destination.chmod(0o700)
 
-            def mismatched_destination_digest(path: Path) -> str:
-                return (
-                    "source-digest"
-                    if path.resolve() == source.resolve()
-                    else "mismatch"
-                )
-
             with patch.object(
-                installer, "digest", side_effect=mismatched_destination_digest
+                installer,
+                "digest",
+                side_effect=lambda path: (
+                    "source-digest"
+                    if path.resolve() == destination.resolve()
+                    else "mismatch"
+                ),
             ):
                 return_code = installer.install(source, destination, dry_run=False)
 
@@ -71,7 +71,7 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(destination.read_text(encoding="utf-8"), "old adapter\n")
             self.assertEqual(destination.stat().st_mode & 0o777, 0o700)
 
-    def test_install_backs_up_existing_file_and_verifies_bytes_and_mode(self) -> None:
+    def test_install_writes_launcher_when_source_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             destination = root / "scripts" / "hermes-antigravity-acp"
@@ -93,7 +93,7 @@ class InstallerTests(unittest.TestCase):
             )
 
             self.assertEqual(completed.returncode, 0, completed.stderr)
-            self.assertEqual(destination.read_bytes(), SOURCE.read_bytes())
+            self.assertEqual(destination.read_bytes(), EXPECTED_LAUNCHER)
             self.assertEqual(os.stat(destination).st_mode & 0o777, 0o700)
             backups = list(destination.parent.glob("hermes-antigravity-acp.bak-*"))
             self.assertEqual(len(backups), 1)

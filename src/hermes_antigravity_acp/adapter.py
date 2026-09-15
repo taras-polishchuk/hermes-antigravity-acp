@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Hermes ACP adapter for the OAuth-authenticated Antigravity CLI.
 
 Hermes creates a fresh external ACP process for every model call. This adapter
@@ -32,7 +31,7 @@ try:
 except Exception:  # pragma: no cover - optional Workspace OS integration
     OPERATOR_HOME = Path.home()
 
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 BROKER_PROTOCOL_VERSION = 1
 DEFAULT_FIRST_TEXT_TIMEOUT = 45.0
 DEFAULT_CONTINUATION_FIRST_TEXT_TIMEOUT = 45.0

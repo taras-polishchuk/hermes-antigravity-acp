@@ -44,11 +44,19 @@ PYTHONWARNINGS=error::ResourceWarning python3 -m unittest discover -s tests -v
 
 ## Releases
 
-- Releases are tagged from `main` by the maintainer.
-- The current maintainer is the operator of this repository. Release
-  cadence is opportunistic and tied to substantive user-facing changes.
+- Releases are tagged from `main` by the maintainer. Tags follow strict
+  semver: `vX.Y.Z`.
+- The PyPI publication is fully automated through GitHub Actions
+  Trusted Publishing. Pushing a tag `v*.*.*` triggers the
+  `release.yml` workflow, which builds sdist + wheel, runs no tests
+  (the `ci.yml` workflow already gates `main`), and uploads both
+  artifacts to PyPI and TestPyPI through OIDC. No API token is ever
+  stored in the repository.
 - The CHANGELOG release heading `## X.Y.Z - YYYY-MM-DD` is set at release
   time, not when changes are merged.
+- PyPI does not allow overwriting a released version. To fix a published
+  bug, cut a new version (e.g. `2.1.1`). To retire a release, use the
+  PyPI web UI to yank it; do not delete the Git tag.
 
 ## Code of conduct
 
