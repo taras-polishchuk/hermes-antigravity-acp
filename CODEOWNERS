@@ -1,0 +1,8 @@
+# Code owners
+
+This file is an opt-in governance surface. Until the maintainer expands
+the reviewers list, the single-owner fallback is the operator of this
+GitHub account.
+
+# Optional: request review automatically.
+# /hermes-antigravity-acp/ @taras-polishchuk

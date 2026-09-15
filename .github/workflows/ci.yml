@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: tests
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: setup python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: install ruff
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ruff==0.15.22
+      - name: lint
+        run: |
+          ruff format --check .
+          ruff check --no-cache .
+      - name: unit tests
+        env:
+          PYTHONWARNINGS: error::ResourceWarning
+        run: |
+          python -m unittest discover -s tests -v

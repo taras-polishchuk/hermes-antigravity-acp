@@ -1,0 +1,21 @@
+# Citation
+
+If you want to cite this project in academic or technical writing, please
+use the following metadata:
+
+```bibtex
+@software{hermes_antigravity_acp,
+  title = {Hermes Antigravity ACP Adapter},
+  author = {Polishchuk, Taras},
+  year = {2026},
+  version = {2.1.0},
+  url = {https://github.com/taras-polishchuk/hermes-antigravity-acp},
+  license = {MIT}
+}
+```
+
+The adapter is a thin, local compatibility layer. It depends on:
+
+- Google Antigravity CLI (`agy`): https://antigravity.google
+- Hermes Agent: https://hermes-agent.nousresearch.com
+- Antigravity OAuth protocol: https://antigravity.google/docs/cli/reference
